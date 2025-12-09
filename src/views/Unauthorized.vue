@@ -1,158 +1,106 @@
 <template>
-  <div class="unauthorized-page">
-    <div class="container">
-      <div class="content">
-        <div class="icon">
-          <q-icon name="block" />
-        </div>
+  <div class="flex flex-center bg-grey-2" style="min-height: 100vh;">
+    <div class="text-center q-pa-md">
+      <q-icon 
+        name="block" 
+        size="120px" 
+        color="negative"
+        class="q-mb-md"
+      />
+      
+      <div class="text-h3 text-weight-bold text-grey-8 q-mb-md">
+        403
+      </div>
+      
+      <div class="text-h5 text-grey-7 q-mb-md">
+        Acceso No Autorizado
+      </div>
+      
+      <div class="text-body1 text-grey-6 q-mb-xl" style="max-width: 400px;">
+        No tienes los permisos necesarios para acceder a esta página.
+        Por favor contacta al administrador si crees que esto es un error.
+      </div>
+      
+      <div class="q-gutter-sm">
+        <q-btn
+          label="Volver al Inicio"
+          color="primary"
+          unelevated
+          size="md"
+          @click="goToHome"
+          icon="home"
+        />
         
-        <h1 class="title">403</h1>
-        <h2 class="subtitle">Acceso Denegado</h2>
-        
-        <p class="message">
-          No tienes permisos para acceder a esta página
-        </p>
-        
-        <div class="actions">
-          <q-btn
-            flat
-            color="primary"
-            label="Ir al Inicio"
-            @click="goHome"
-            class="action-btn" />
-          <q-btn
-            flat
-            color="grey-7"
-            label="Volver"
-            @click="goBack"
-            class="action-btn" />
-        </div>
+        <q-btn
+          label="Cerrar Sesión"
+          color="negative"
+          outline
+          size="md"
+          @click="logout"
+          icon="logout"
+        />
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
+<script>
 import { useRouter } from 'vue-router'
-import { useAuthStore } from 'src/stores/authStore'
+import { useQuasar } from 'quasar'
 
-const router = useRouter()
-const authStore = useAuthStore()
-
-const goHome = () => {
-  // Redirigir según el rol del usuario
-  if (authStore.user?.role?.name === 'ADMINISTRADOR') {
-    router.push('/app/inicio')
-  } else if (authStore.user?.role?.name === 'APRENDIZ') {
-    router.push('/app/aprendiz/inicio')
-  } else if (authStore.user?.role?.name === 'INSTRUCTOR') {
-    router.push('/app/inicio')
-  } else {
-    router.push('/login')
+export default {
+  name: 'UnauthorizedView',
+  
+  setup() {
+    const router = useRouter()
+    const $q = useQuasar()
+    
+    const goToHome = () => {
+      const userRole = localStorage.getItem('userRole')
+      
+      if (userRole === 'admin') {
+        router.push('/app/inicio')
+      } else if (userRole === 'instructor') {
+        router.push('/app/instructor/bitacoras')
+      } else if (userRole === 'aprendiz') {
+        router.push('/app/aprendiz/inicio')
+      } else {
+        router.push('/')
+      }
+    }
+    
+    const logout = () => {
+      localStorage.removeItem('authToken')
+      localStorage.removeItem('userRole')
+      
+      $q.notify({
+        type: 'info',
+        message: 'Sesión cerrada correctamente',
+        position: 'top'
+      })
+      
+      router.push('/')
+    }
+    
+    return {
+      goToHome,
+      logout
+    }
   }
-}
-
-const goBack = () => {
-  router.go(-1)
 }
 </script>
 
 <style scoped>
-.unauthorized-page {
-  min-height: 100vh;
-  background: #fafafa;
+.flex {
   display: flex;
+}
+
+.flex-center {
+  justify-content: center;
   align-items: center;
-  justify-content: center;
 }
 
-.container {
-  max-width: 480px;
-  padding: 0 24px;
-}
-
-.content {
-  text-align: center;
-  padding: 48px 0;
-}
-
-.icon {
-  margin-bottom: 24px;
-}
-
-.icon :deep(.q-icon) {
-  font-size: 64px;
-  color: #f44336;
-  opacity: 0.8;
-}
-
-.title {
-  font-size: 72px;
-  font-weight: 300;
-  color: #424242;
-  margin: 0 0 8px 0;
-  line-height: 1;
-}
-
-.subtitle {
-  font-size: 24px;
-  font-weight: 400;
-  color: #616161;
-  margin: 0 0 24px 0;
-}
-
-.message {
-  font-size: 16px;
-  color: #757575;
-  line-height: 1.5;
-  margin: 0 0 40px 0;
-}
-
-.actions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.action-btn {
-  min-width: 120px;
-  height: 40px;
-  font-weight: 500;
-  text-transform: none;
-  letter-spacing: 0.25px;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .container {
-    padding: 0 16px;
-  }
-  
-  .content {
-    padding: 32px 0;
-  }
-  
-  .title {
-    font-size: 56px;
-  }
-  
-  .subtitle {
-    font-size: 20px;
-  }
-  
-  .message {
-    font-size: 14px;
-    margin-bottom: 32px;
-  }
-  
-  .actions {
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .action-btn {
-    width: 100%;
-  }
+.bg-grey-2 {
+  background-color: #fafafa;
 }
 </style>
